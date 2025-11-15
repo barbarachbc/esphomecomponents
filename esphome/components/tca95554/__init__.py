@@ -9,6 +9,7 @@ from esphome.const import (
     CONF_MODE,
     CONF_NUMBER,
     CONF_OUTPUT,
+    CONF_ADDRESS
 )
 
 CODEOWNERS = ["@barbarachbc"]
@@ -17,10 +18,21 @@ AUTO_LOAD = ["gpio_expander"]
 DEPENDENCIES = ["i2c"]
 MULTI_CONF = True
 
+#the only valid addresses for TCA9554 and TCA9554A
+TCA9554_VALID_ADDRESSES = list(range(0x38, 0x40)) + list(range(0x20, 0x28))
+
 tca9554_ns = cg.esphome_ns.namespace("tca9554")
 
 TCA9554Component = tca9554_ns.class_("TCA9554Component", cg.Component, i2c.I2CDevice)
 TCA9554GPIOPin = tca9554_ns.class_("TCA9554GPIOPin", cg.GPIOPin)
+
+def check_keys(obj):
+    if obj[CONF_ADDRESS] not in TCA9554_VALID_ADDRESSES:
+        msg = "Only the following addresses are valid: 0x38-0x3F\r"
+        msg += "TCA9554:  0x20 - 0x27\r"
+        msg += "TCA9554A: 0x38 - 0x3F"
+        raise cv.Invalid(msg)
+    return obj
 
 CONF_TCA9554 = "tca9554"
 CONFIG_SCHEMA = (
@@ -30,9 +42,9 @@ CONFIG_SCHEMA = (
         }
     )
     .extend(cv.COMPONENT_SCHEMA)
-    .extend(i2c.i2c_device_schema(0x21))
+    .extend(i2c.i2c_device_schema(0x38)),
+    check_keys,
 )
-
 
 async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
