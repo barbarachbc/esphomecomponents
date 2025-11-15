@@ -6,13 +6,13 @@
 #include "esphome/core/hal.h"
 
 namespace esphome {
-namespace tca9555 {
+namespace tca9554 {
 
-class TCA9555Component : public Component,
+class TCA9554Component : public Component,
                          public i2c::I2CDevice,
-                         public gpio_expander::CachedGpioExpander<uint8_t, 16> {
+                         public gpio_expander::CachedGpioExpander<uint8_t, 8> {
  public:
-  TCA9555Component() = default;
+  TCA9554Component() = default;
 
   /// Check i2c availability and setup masks
   void setup() override;
@@ -30,19 +30,19 @@ class TCA9555Component : public Component,
   void digital_write_hw(uint8_t pin, bool value) override;
 
   /// Mask for the pin mode - 1 means output, 0 means input
-  uint16_t mode_mask_{0x00};
+  uint8_t mode_mask_{0x00};
   /// The mask to write as output state - 1 means HIGH, 0 means LOW
-  uint16_t output_mask_{0x00};
+  uint8_t output_mask_{0x00};
   /// The state read in digital_read_hw - 1 means HIGH, 0 means LOW
-  uint16_t input_mask_{0x00};
+  uint8_t input_mask_{0x00};
 
   bool read_gpio_modes_();
   bool write_gpio_modes_();
   bool read_gpio_outputs_();
 };
 
-/// Helper class to expose a TCA9555 pin as an internal input GPIO pin.
-class TCA9555GPIOPin : public GPIOPin, public Parented<TCA9555Component> {
+/// Helper class to expose a TCA9554 pin as an internal input GPIO pin.
+class TCA9554GPIOPin : public GPIOPin, public Parented<TCA9554Component> {
  public:
   void setup() override;
   void pin_mode(gpio::Flags flags) override;
@@ -62,5 +62,5 @@ class TCA9555GPIOPin : public GPIOPin, public Parented<TCA9555Component> {
   gpio::Flags flags_;
 };
 
-}  // namespace tca9555
+}  // namespace tca9554
 }  // namespace esphome
