@@ -35,7 +35,7 @@ def check_keys(obj):
     return obj
 
 CONF_TCA9554 = "tca9554"
-CONFIG_SCHEMA = (
+CONFIG_SCHEMA = cv.All(
     cv.Schema(
         {
             cv.Required(CONF_ID): cv.declare_id(TCA9554Component),
