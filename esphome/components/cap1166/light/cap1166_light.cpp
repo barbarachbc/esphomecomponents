@@ -18,5 +18,14 @@ void CAP1166Light::write_state(light::LightState *state)
     }
   }
 
+void CAP1166Light::setup() {
+  ESP_LOGD(TAG, "Configuring LED channel %d with behavior %d", this->channel_, this->led_behavior_);
+  
+  // Configure the LED behavior
+  this->parent_->configure_led_behavior(this->channel_, this->led_behavior_);
+  
+  ESP_LOGD(TAG, "LED channel %d configured successfully", this->channel_);
+}
+
 }  // namespace cap1166
 }  // namespace esphome

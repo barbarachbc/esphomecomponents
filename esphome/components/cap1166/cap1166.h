@@ -40,6 +40,14 @@ enum {
   CAP1166_LED_DUTY_DIRECT = 0x93,
 };
 
+// LED behavior enumeration
+enum CAP1166LedBehavior {
+  LED_BEHAVIOR_DIRECT = 0x00,   // 00 - direct
+  LED_BEHAVIOR_PULSE1 = 0x01,   // 01 - pulse 1
+  LED_BEHAVIOR_PULSE2 = 0x02,   // 10 - pulse 2  
+  LED_BEHAVIOR_BREATHE = 0x03,  // 11 - breathe
+};
+
 class CAP1166Channel {
  public:
   virtual void process(uint8_t data) = 0;
@@ -50,6 +58,7 @@ class CAP1166Component;
 class CAP1166LedChannel : public Parented<CAP1166Component> {
   public:
     virtual uint8_t get_channel() = 0;
+    virtual void setup() = 0;
 };
 
 class CAP1166Component : public Component, public i2c::I2CDevice {
@@ -70,12 +79,14 @@ class CAP1166Component : public Component, public i2c::I2CDevice {
   void loop() override;
   void turn_on(uint8_t channel);
   void turn_off(uint8_t channel);
+  void configure_led_behavior(uint8_t channel, CAP1166LedBehavior behavior);
 
  protected:
   void finish_setup_();
 
   std::vector<CAP1166Channel *> channels_{};
-  uint8_t led_channels_{0x3F};
+  std::vector<CAP1166LedChannel *> led_channels_{};
+  uint8_t led_channels_mask_{0x3F};
 
   uint8_t touch_threshold_{0x20};
   uint8_t allow_multiple_touches_{0x80};

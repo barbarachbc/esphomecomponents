@@ -54,10 +54,14 @@ void CAP1166Component::finish_setup_() {
 
   // Have LEDs follow touches
   //if not linked - unlink all, otherwise unlink those configured as lights
-  this->write_byte(CAP1166_LED_LINK, this->link_leds_ & ~(this->led_channels_));
+  this->write_byte(CAP1166_LED_LINK, this->link_leds_ & ~(this->led_channels_mask_));
 
   // Speed up a bit
   this->write_byte(CAP1166_STAND_BY_CONFIGURATION, 0x30);
+
+  for (auto *channel : this->led_channels_) {
+    channel->setup();
+  }
 
   // Setup successful, so enable loop
   this->enable_loop();
@@ -106,7 +110,7 @@ void CAP1166Component::turn_on(uint8_t channel) {
   this->read_register(CAP1166_LED_OUT, &data, 1);
   ESP_LOGD(TAG, "Turning ON channel - %01u, registry value: %01u", channel, data);
   data = data | (1 << channel);
-  ESP_LOGD(TAG, "Turning ON channel - %01u, registry value: %01u", channel, data);
+  ESP_LOGV(TAG, "Turning ON channel - %01u, registry value: %01u", channel, data);
   this->write_register(CAP1166_LED_OUT, &data, 1);
 }
 
@@ -115,14 +119,34 @@ void CAP1166Component::turn_off(uint8_t channel) {
   this->read_register(CAP1166_LED_OUT, &data, 1);
   ESP_LOGD(TAG, "Turning OFF channel - %01u, registry value: %01u", channel, data);
   data = data & (~(1 << channel));
-  ESP_LOGD(TAG, "Turning OFF channel - %01u, registry value: %01u", channel, data);
+  ESP_LOGV(TAG, "Turning OFF channel - %01u, registry value: %01u", channel, data);
   this->write_register(CAP1166_LED_OUT, &data, 1);
 }
 
 void CAP1166Component::register_channel(CAP1166LedChannel *channel) {
-  this->led_channels_ = this->led_channels_ | (1 << channel->get_channel());
+  this->led_channels_mask_ = this->led_channels_mask_ | (1 << channel->get_channel());
+  this->led_channels_.push_back(channel);
   channel->set_parent(this);
   ESP_LOGD(TAG, "Registered channel: %01u", channel->get_channel());
+}
+
+void CAP1166Component::configure_led_behavior(uint8_t channel, CAP1166LedBehavior behavior) {
+  // Configure LED behavior in behavior registers
+  uint8_t behavior_reg = (channel < 4) ? CAP1166_LED_BEHAVIOUR1 : CAP1166_LED_BEHAVIOUR2;
+  uint8_t shift = (channel % 4) * 2;
+  
+  uint8_t reg_value = 0;
+  this->read_byte(behavior_reg, &reg_value);
+  
+  // Clear the 2 bits for this channel
+  reg_value &= ~(0x03 << shift);
+  // Set the new behavior
+  reg_value |= (behavior << shift);
+  
+  this->write_byte(behavior_reg, reg_value);
+  
+  ESP_LOGD(TAG, "Configured LED behavior for channel %d: %d (reg 0x%02x = 0x%02x)", 
+           channel, behavior, behavior_reg, reg_value);
 }
 
 }  // namespace cap1166
