@@ -58,6 +58,7 @@ class CAP1166Component;
 class CAP1166LedChannel : public Parented<CAP1166Component> {
   public:
     virtual uint8_t get_channel() = 0;
+    virtual bool is_linked() = 0;
     virtual void setup() = 0;
 };
 
@@ -86,7 +87,7 @@ class CAP1166Component : public Component, public i2c::I2CDevice {
 
   std::vector<CAP1166Channel *> channels_{};
   std::vector<CAP1166LedChannel *> led_channels_{};
-  uint8_t led_channels_mask_{0x3F};
+  uint8_t led_channels_mask_{0x00};
 
   uint8_t touch_threshold_{0x20};
   uint8_t allow_multiple_touches_{0x80};

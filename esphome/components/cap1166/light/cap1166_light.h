@@ -8,9 +8,11 @@ namespace cap1166 {
 
 class CAP1166Light : public light::LightOutput, public CAP1166LedChannel {
  public:
-  void set_channel(uint8_t channel) { channel_ = channel; }
-  uint8_t get_channel() { return channel_; }
-  void set_led_behavior(CAP1166LedBehavior behavior) { led_behavior_ = behavior; }
+  void set_channel(uint8_t channel) { this->channel_ = channel; }
+  uint8_t get_channel() { return this->channel_; }
+  void set_led_behavior(CAP1166LedBehavior behavior) { this->led_behavior_ = behavior; }
+  void set_link_to_touch(bool linked){ this->linked_to_touch_ = linked; }
+  bool is_linked(){ return this->linked_to_touch_; }
 
   light::LightTraits get_traits() override {
     auto traits = light::LightTraits();
@@ -24,6 +26,7 @@ class CAP1166Light : public light::LightOutput, public CAP1166LedChannel {
  protected:
   uint8_t channel_;
   CAP1166LedBehavior led_behavior_{LED_BEHAVIOR_DIRECT};
+  bool linked_to_touch_;
 };
 
 }  // namespace cap1166

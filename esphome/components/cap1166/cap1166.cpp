@@ -54,8 +54,7 @@ void CAP1166Component::finish_setup_() {
 
   // Have LEDs follow touches
   //if not linked - unlink all, otherwise unlink those configured as lights
-  this->write_byte(CAP1166_LED_LINK, this->link_leds_ & ~(this->led_channels_mask_));
-
+  this->write_byte(CAP1166_LED_LINK, (this->link_leds_ & ~(this->led_channels_mask_)));
   // Speed up a bit
   this->write_byte(CAP1166_STAND_BY_CONFIGURATION, 0x30);
 
@@ -124,7 +123,10 @@ void CAP1166Component::turn_off(uint8_t channel) {
 }
 
 void CAP1166Component::register_channel(CAP1166LedChannel *channel) {
-  this->led_channels_mask_ = this->led_channels_mask_ | (1 << channel->get_channel());
+  if(!channel->is_linked())
+  {
+    this->led_channels_mask_ |= (1 << channel->get_channel());
+  }
   this->led_channels_.push_back(channel);
   channel->set_parent(this);
   ESP_LOGD(TAG, "Registered channel: %01u", channel->get_channel());

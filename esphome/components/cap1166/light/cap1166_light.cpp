@@ -9,6 +9,10 @@ static const char *const TAG = "cap1166.light";
 
 void CAP1166Light::write_state(light::LightState *state)
  {
+    if(this->linked_to_touch_){
+      return;
+    }
+
     bool binary;
     state->current_values_as_binary(&binary);
     if (binary) {
