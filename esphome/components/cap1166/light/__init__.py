@@ -3,21 +3,13 @@ from esphome.components import light
 import esphome.config_validation as cv
 from esphome.const import CONF_CHANNEL, CONF_OUTPUT_ID, CONF_INTERNAL
 
-from .. import CONF_CAP1166_ID, CAP1166Component, cap1166_ns
+from .. import CONF_CAP1166_ID, CAP1166Component, cap1166_ns, LED_BEHAVIORS
 
 DEPENDENCIES = ["cap1166"]
 
 # Constants for LED behavior configuration
 CONF_LED_BEHAVIOR = "led_behavior"
 CONF_LINKED_TO_TOUCH = "linked"
-
-CAP1166LedBehavior = cap1166_ns.enum("CAP1166LedBehavior")
-LED_BEHAVIORS = {
-    "DIRECT": CAP1166LedBehavior.LED_BEHAVIOR_DIRECT,
-    "PULSE1": CAP1166LedBehavior.LED_BEHAVIOR_PULSE1,
-    "PULSE2": CAP1166LedBehavior.LED_BEHAVIOR_PULSE2,
-    "BREATHE": CAP1166LedBehavior.LED_BEHAVIOR_BREATHE,
-}
 
 def check_linked(obj):
     if CONF_LINKED_TO_TOUCH not in obj or not obj[CONF_LINKED_TO_TOUCH]:

@@ -81,9 +81,16 @@ class CAP1166Component : public Component, public i2c::I2CDevice {
   void turn_on(uint8_t channel);
   void turn_off(uint8_t channel);
   void configure_led_behavior(uint8_t channel, CAP1166LedBehavior behavior);
+  void configure_led_brightness(uint8_t min_brightness, uint8_t max_brightness, CAP1166LedBehavior behavior);
+  void set_behavior_brightness(CAP1166LedBehavior behavior, 
+                              uint8_t max_brightness_percentage,
+                              uint8_t min_brightness_percentage);
 
  protected:
   void finish_setup_();
+  static uint8_t percentage_to_max_register_value_(uint8_t percentage);
+  static uint8_t percentage_to_min_register_value_(uint8_t percentage);
+  static uint8_t percentage_to_register_value_(uint8_t percentage);
 
   std::vector<CAP1166Channel *> channels_{};
   std::vector<CAP1166LedChannel *> led_channels_{};
@@ -92,6 +99,9 @@ class CAP1166Component : public Component, public i2c::I2CDevice {
   uint8_t touch_threshold_{0x20};
   uint8_t allow_multiple_touches_{0x80};
   uint8_t link_leds_{0xFF};
+
+  uint8_t behavior_max_brightness_[4]{0xF, 0xF, 0xF, 0xF};
+  uint8_t behavior_min_brightness_[4]{0x0, 0x0, 0x0, 0x0};
 
   GPIOPin *reset_pin_{nullptr};
 
