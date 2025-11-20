@@ -6,6 +6,10 @@ namespace esphome {
 namespace cap1166 {
 
 static const char *const TAG = "cap1166";
+ // Setup brightness for all behaviors
+const CAP1166LedBehavior behaviors[] = {
+  LED_BEHAVIOR_DIRECT, LED_BEHAVIOR_PULSE1, LED_BEHAVIOR_PULSE2, LED_BEHAVIOR_BREATHE
+};
 
 void CAP1166Component::setup() {
   this->disable_loop();
@@ -58,16 +62,7 @@ void CAP1166Component::finish_setup_() {
   // Speed up a bit
   this->write_byte(CAP1166_STAND_BY_CONFIGURATION, 0x30);
 
-  // Setup brightness for all behaviors
-  const CAP1166LedBehavior behaviors[] = {
-    LED_BEHAVIOR_DIRECT, LED_BEHAVIOR_PULSE1, LED_BEHAVIOR_PULSE2, LED_BEHAVIOR_BREATHE
-  };
-
-  for (auto behavior : behaviors) {
-    this->configure_led_brightness(this->behavior_min_brightness_[behavior], 
-                            this->behavior_max_brightness_[behavior], 
-                            behavior);
-  }
+  this->reconfigure_all_led_brightness();
 
   for (auto *channel : this->led_channels_) {
     channel->setup();
@@ -75,6 +70,14 @@ void CAP1166Component::finish_setup_() {
 
   // Setup successful, so enable loop
   this->enable_loop();
+}
+
+void CAP1166Component::reconfigure_all_led_brightness() {
+  for (auto behavior : behaviors) {
+      this->configure_led_brightness(this->behavior_min_brightness_[behavior], 
+                              this->behavior_max_brightness_[behavior], 
+                              behavior);
+  }
 }
 
 void CAP1166Component::dump_config() {
@@ -187,6 +190,15 @@ void CAP1166Component::configure_led_brightness(uint8_t min_brightness, uint8_t 
   
   ESP_LOGD(TAG, "Configured LED brightness for %d: min=%d, max=%d (reg 0x%02x = 0x%02x)", 
            behavior, min_brightness, max_brightness, duty_reg, duty_value);
+}
+
+void CAP1166Component::update_all_brightness(uint8_t min_brightness, uint8_t max_brightness){
+  for (auto behavior : behaviors) {
+    this->behavior_max_brightness_[behavior] = max_brightness;
+    this->behavior_min_brightness_[behavior] = min_brightness;
+  }
+
+  this->reconfigure_all_led_brightness();
 }
 
 void CAP1166Component::set_behavior_brightness(CAP1166LedBehavior behavior, 

@@ -85,12 +85,14 @@ class CAP1166Component : public Component, public i2c::I2CDevice {
   void set_behavior_brightness(CAP1166LedBehavior behavior, 
                               uint8_t max_brightness_percentage,
                               uint8_t min_brightness_percentage);
+  void update_all_brightness(uint8_t min_brightness, uint8_t max_brightness);
 
  protected:
   void finish_setup_();
   static uint8_t percentage_to_max_register_value_(uint8_t percentage);
   static uint8_t percentage_to_min_register_value_(uint8_t percentage);
   static uint8_t percentage_to_register_value_(uint8_t percentage);
+  void reconfigure_all_led_brightness();
 
   std::vector<CAP1166Channel *> channels_{};
   std::vector<CAP1166LedChannel *> led_channels_{};
