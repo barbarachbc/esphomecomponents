@@ -45,15 +45,16 @@ void CAP1166Component::finish_setup_() {
 
   // Set sensitivity
   uint8_t sensitivity = 0;
-  this->read_byte(CAP1166_SENSITVITY, &sensitivity);
+  this->read_byte(CAP1166_SENSITIVITY, &sensitivity);
   sensitivity = sensitivity & 0x0f;
-  this->write_byte(CAP1166_SENSITVITY, sensitivity | this->touch_threshold_);
+  this->write_byte(CAP1166_SENSITIVITY, sensitivity | this->touch_threshold_);
 
   // Allow multiple touches
   this->write_byte(CAP1166_MULTI_TOUCH, this->allow_multiple_touches_);
 
   // Have LEDs follow touches
-  this->write_byte(CAP1166_LED_LINK, 0xFF);
+  //if not linked - unlink all, otherwise unlink those configured as lights
+  this->write_byte(CAP1166_LED_LINK, this->link_leds_ & ~(this->led_channels_));
 
   // Speed up a bit
   this->write_byte(CAP1166_STAND_BY_CONFIGURATION, 0x30);
@@ -92,12 +93,36 @@ void CAP1166Component::loop() {
     this->read_register(CAP1166_MAIN, &data, 1);
     data = data & ~CAP1166_MAIN_INT;
 
-    this->write_register(CAP1166_MAIN, &data, 2);
+    this->write_byte(CAP1166_MAIN, data);
   }
 
   for (auto *channel : this->channels_) {
     channel->process(touched);
   }
+}
+
+void CAP1166Component::turn_on(uint8_t channel) {
+  uint8_t data = 0;
+  this->read_register(CAP1166_LED_OUT, &data, 1);
+  ESP_LOGD(TAG, "Turning ON channel - %01u, registry value: %01u", channel, data);
+  data = data | (1 << channel);
+  ESP_LOGD(TAG, "Turning ON channel - %01u, registry value: %01u", channel, data);
+  this->write_register(CAP1166_LED_OUT, &data, 1);
+}
+
+void CAP1166Component::turn_off(uint8_t channel) {
+  uint8_t data = 0;
+  this->read_register(CAP1166_LED_OUT, &data, 1);
+  ESP_LOGD(TAG, "Turning OFF channel - %01u, registry value: %01u", channel, data);
+  data = data & (~(1 << channel));
+  ESP_LOGD(TAG, "Turning OFF channel - %01u, registry value: %01u", channel, data);
+  this->write_register(CAP1166_LED_OUT, &data, 1);
+}
+
+void CAP1166Component::register_channel(CAP1166LedChannel *channel) {
+  this->led_channels_ = this->led_channels_ | (1 << channel->get_channel());
+  channel->set_parent(this);
+  ESP_LOGD(TAG, "Registered channel: %01u", channel->get_channel());
 }
 
 }  // namespace cap1166

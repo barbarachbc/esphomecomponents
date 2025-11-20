@@ -6,6 +6,7 @@ from esphome.const import CONF_ID, CONF_RESET_PIN
 
 CONF_TOUCH_THRESHOLD = "touch_threshold"
 CONF_ALLOW_MULTIPLE_TOUCHES = "allow_multiple_touches"
+CONF_LINK_LEDS = "link_leds"
 
 DEPENDENCIES = ["i2c"]
 AUTO_LOAD = ["binary_sensor", "output"]
@@ -25,6 +26,7 @@ CONFIG_SCHEMA = (
                 min=0x01, max=0x80
             ),
             cv.Optional(CONF_ALLOW_MULTIPLE_TOUCHES, default=False): cv.boolean,
+            cv.Optional(CONF_LINK_LEDS, default=True): cv.boolean,
         }
     )
     .extend(cv.COMPONENT_SCHEMA)
@@ -36,6 +38,7 @@ async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
     cg.add(var.set_touch_threshold(config[CONF_TOUCH_THRESHOLD]))
     cg.add(var.set_allow_multiple_touches(config[CONF_ALLOW_MULTIPLE_TOUCHES]))
+    cg.add(var.set_link_leds(config[CONF_LINK_LEDS]))
 
     if reset_pin_config := config.get(CONF_RESET_PIN):
         pin = await cg.gpio_pin_expression(reset_pin_config)
